@@ -14,10 +14,9 @@ class Komik extends BaseController
     }
     public function index()
     {
-        $komik = $this->komikModel->findAll();
         $data = [
             'title' => 'Daftar Komik',
-            'komik' => $komik
+            'komik' => $this->komikModel->getKomik()
         ];
 
         // $komikModel = new \App\Models\KomikModel();
@@ -25,5 +24,45 @@ class Komik extends BaseController
 
 
         return view('Komik/index', $data);
+    }
+
+    public function detail($slug)
+    {
+
+        $data = [
+            'title' => 'Detail Komik',
+            'komik' => $this->komikModel->getKomik($slug)
+        ];
+
+        if (empty($data['komik'])) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Judul Komik' . $slug . 'tidak ada');
+        }
+
+        return view('Komik/detail', $data);
+    }
+
+    public function create()
+    {
+        $data = [
+            'title' => 'Form Tambah Data Komik'
+        ];
+
+        return view('Komik/create', $data);
+    }
+
+    public function save()
+    {
+        $slug = url_title($this->request->getVar('judul'), '-', true);
+        $this->komikModel->save([
+            'judul'     => $this->request->getVar('judul'),
+            'slug'      => $slug,
+            'penulis'   => $this->request->getVar('penulis'),
+            'penerbit'  => $this->request->getVar('penerbit'),
+            'sampul'    => $this->request->getVar('sampul')
+        ]);
+
+        session()->setFlashdata('pesan', 'Data berhasil ditambahkan');
+
+        return redirect()->to('/komik');
     }
 }
